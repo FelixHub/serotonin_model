@@ -18,7 +18,7 @@ import miniworld
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--env-name", default='MiniWorld-TMaze-v0') # miniworld.envs.env_ids[0]
+parser.add_argument("--env-name", default='MiniWorld-OneRoomS6-v0') # miniworld.envs.env_ids[0]
 parser.add_argument(
     "--domain-rand", action="store_true", help="enable domain randomization"
 )
