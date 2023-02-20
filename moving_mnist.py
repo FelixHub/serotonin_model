@@ -201,7 +201,7 @@ def main(
         nums_per_image=nums_per_image,
     )
     dat = np.reshape(dat, (num_images, num_frames, frame_size, frame_size))
-    n = num_images * num_frames
+
     if filetype == "npz":
         np.savez(dest, dat)
     elif filetype == "npy":
