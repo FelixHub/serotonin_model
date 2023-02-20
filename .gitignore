@@ -1,2 +1,10 @@
+# local folders
 data/
 model/
+figures/
+
+# notebook checkpoints
+.ipynb_checkpoints
+
+# python workbench files
+workbench*.py
