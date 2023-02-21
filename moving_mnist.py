@@ -200,17 +200,26 @@ def main(
         original_size=original_size,
         nums_per_image=nums_per_image,
     )
-    dat = np.reshape(dat, (num_images, num_frames, frame_size, frame_size))
 
-    if filetype == "npz":
-        np.savez(dest, dat)
-    elif filetype == "npy":
-        np.save(dest, dat)
-    elif filetype == "jpg":
+    if filetype == "jpg":
         for i in range(dat.shape[0]):
             Image.fromarray(get_image_from_array(dat, i, mean=0)).save(
                 os.path.join(dest, f"{i}.jpg")
             )
+    elif filetype == "npy":
+        dat = np.reshape(dat, (num_images, num_frames, frame_size, frame_size))
+        np.save(dest, np.transpose(dat, (0, 1, 3, 2)))
+
+
+def plot_data(data):
+    """Plot the data"""
+    import matplotlib.pyplot as plt
+
+    plt.subplots(1, 20, figsize=(20, 1))
+    for i in range(20):
+        plt.imshow(data[i, :, :])
+        plt.axis("off")
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -221,7 +230,7 @@ if __name__ == "__main__":
         "--dest",
         type=str,
         dest="dest",
-        default="./data/moving_mnist_200_generated.npy",
+        default="./data/moving_mnist_200_generated",
     )
     parser.add_argument("--filetype", type=str, dest="filetype", default="npy")
     parser.add_argument("--training", type=bool, dest="training", default=True)
