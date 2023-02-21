@@ -8,3 +8,6 @@ figures/
 
 # python workbench files
 workbench*.py
+
+# training images gz files
+*.gz
