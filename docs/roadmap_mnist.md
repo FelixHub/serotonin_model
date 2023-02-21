@@ -19,13 +19,13 @@ The [moving MNIST task](http://www.cs.toronto.edu/~nitish/unsupervised_video/) i
 
 #### v0.1
 
+- [x] Generate data with digits starting from left-bottom/-top and move to the opposite corner
 - [x] Position glitch
-  - [x] Start from left-bottom/-top and move to the opposite corner
-  - [x] Switch video at frame 10
-- [ ] Digit identity glitch
-  - [ ] Use position glitch data but swap out second half of videos instead of first half
+  - [x] At frame 10, switch to the beginning of the same video
+- [x] Digit identity glitch
+  - [x] At frame 10, switch to the second half of another video
 - [ ] Bounce
-  - [ ] Start from left-middle and move diagonally ($\pm 45^{\circ}$) with same speed to bounce digits at top-/bottom-middle
+  - [ ] Generate data with digits starting from left-middle and moving diagonally ($\pm 45^{\circ}$) with same speed to bounce digits at top-/bottom-middle
 
 ##### Lessons
 
