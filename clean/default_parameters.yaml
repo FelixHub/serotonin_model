@@ -1,0 +1,10 @@
+# file for storing parameters of the models
+
+hidden_dim : 128
+latent_dim : 32
+RNN_dim : 32
+img_size : 64
+
+batch_size : 64
+learning_rate : 0.0001
+nb_epochs : 3
