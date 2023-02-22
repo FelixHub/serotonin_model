@@ -31,7 +31,7 @@ Here is the reasoning behind the [code design for Moving MNIST data generation](
 
 #### v0.2: Refactor data generation code
 
-The goal is the design modular code generating trajectories. For v0.2, the focus is on the architecture, so just get classes functioning for the standard trajectories. Here's the [[code design for Moving MNIST data generation]].
+The goal is the design modular code generating trajectories. For v0.2, the focus is on the architecture, so just get classes functioning for the standard trajectories. Here's the [code design for Moving MNIST data generation](./code_design_moving_mnist.md).
 
 - [x] helper functions:
 	- [x] add type hints
