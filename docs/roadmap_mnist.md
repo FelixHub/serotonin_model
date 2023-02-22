@@ -13,7 +13,7 @@ We would like to cover the following experimental manipulations:
 
 ### Implementation
 
-Here is the reasoning behing the [code design for Moving MNIST data generation]().
+Here is the reasoning behind the [code design for Moving MNIST data generation](./code_design_moving_mnist.md).
 #### v0.1 Try whatever works
 
 - [x] Position glitch
