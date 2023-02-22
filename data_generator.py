@@ -3,6 +3,12 @@
 # Module to generate custom moving mnist video datasets
 # refactored version of https://gist.github.com/tencia/afb129122a64bde3bd0c
 #
+# usage:
+# `python data_generator.py`
+#
+# Notes:
+# Under development. Currently only makes standard and position glitch datasets.
+#
 ###########################################################################################
 
 import math
@@ -209,12 +215,12 @@ class PositionGlitchTrajectoryGenerator(TrajectoryGenerator):
 class MNISTSampler(ABC):
     """Abstract base class for sampling MNIST digits"""
 
-    max_idx: int = 60_000
     config: VideoConfig = VideoConfig()
+    idx_max: int = 60_000
 
     def _sample_ids_for_frame(self) -> np.ndarray:
         """Sample MNIST digits' indices for one frame"""
-        return np.random.randint(0, self.max_idx, self.config.nums_per_image)
+        return np.random.randint(0, self.idx_max, self.config.nums_per_image)
 
     @abstractmethod
     def _sample_ids_for_trajectory(self) -> np.ndarray:
@@ -306,5 +312,27 @@ class MovingMNISTFactory:
         return np.load(path)
 
 
+def main():
+    """Main function"""
+
+    print("Generating standard Moving MNIST dataset...\n")
+
+    config = VideoConfig()
+    trajectory_generator = StandardTrajectoryGenerator(config)
+    mnist_sampler = StandardMNISTSampler(config=config)
+    mnist_data = load_dataset(training=True)
+
+    factory = MovingMNISTFactory(
+        trajectory_generator=trajectory_generator,
+        mnist_sampler=mnist_sampler,
+        mnist_data=mnist_data,
+        config=config,
+    )
+    dataset = factory.make()
+    factory.save("test_factory_data.npy", dataset)
+
+    print("\nDone! Saved to data/test_factory_data.npy")
+
+
 if __name__ == "__main__":
-    print("Currently, this script is not meant to be run directly.")
+    main()
