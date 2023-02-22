@@ -11,3 +11,6 @@ workbench*.py
 
 # training images gz files
 *.gz
+
+# python cache files
+__pycache__/
