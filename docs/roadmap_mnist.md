@@ -4,37 +4,58 @@ The [moving MNIST task](http://www.cs.toronto.edu/~nitish/unsupervised_video/) i
 
 ## Experimental manipulations
 
-- [/] Generate custom datasets
-  - [x] Get a working script
-  - [ ] Refactor for easily generating new tasks
-- [ ] Generate datasets:
-  - [/] v0.1
-    - [x] Position glitch
-    - [/] Digit identity glitch
-    - [ ] Bounce
-  - [ ] v0.2
-    - [ ] Speed glitch
+We would like to cover the following experimental manipulations:
 
-### Version 0 implementation
+- Position glitch
+- Digit identity glitch
+- Bounce
+- Speed glitch
 
-#### v0.1
+### Implementation
 
-- [x] Generate data with digits starting from left-bottom/-top and move to the opposite corner
+Here is the reasoning behing the [code design for Moving MNIST data generation]().
+#### v0.1 Try whatever works
+
 - [x] Position glitch
-  - [x] At frame 10, switch to the beginning of the same video
+	- [x] Start from left-bottom/-top and move to the opposite corner
+	- [x] Switch video at frame 10
 - [x] Digit identity glitch
-  - [x] At frame 10, switch to the second half of another video
-- [ ] Bounce
-  - [ ] Generate data with digits starting from left-middle and moving diagonally ($\pm 45^{\circ}$) with same speed to bounce digits at top-/bottom-middle
+	- [x] Use position glitch data but swap out second half of videos instead of first half
+- [-] Bounce
+	- [-] Start from left-middle and move diagonally ($\pm 45^{\circ}$) with same speed to bounce digits at top-/bottom-middle
+- [-] Speed glitch
+	- [-] Increase or decrease the speed midway through the video
 
-##### Lessons
+> [!NOTE] Abandoned in favor of refactoring
+> The code was getting too tedious to use for each specific use case. Instead, we'll focus on refactoring the data generation code entirely to easily generate arbitrary new trajectories.
 
-Note here
+#### v0.2: Refactor data generation code
 
-#### v0.2
+The goal is the design modular code generating trajectories. For v0.2, the focus is on the architecture, so just get classes functioning for the standard trajectories. Here's the [[code design for Moving MNIST data generation]].
 
-- [ ] Speed glitch
-  - [ ] Increase or decrease the speed midway through the video
+- [x] helper functions:
+	- [x] add type hints
+	- [x] update names to please linter
+- [x] config class for data
+- [x] trajectory generator classes
+- [x] MNIST Sampler classes
+- [x] Moving MNIST Factory
+
+#### v0.3: Add classes for required manipulations
+
+- [ ] Trajectory generator
+	- [/] Position glitch
+	- [ ] Speed glitch
+	- [ ] Bounce
+- [ ] MNIST sampler
+	- [ ] Digit identity glitch
+- [ ] Moving MNIST factories
+	- [ ] Position glitch
+	- [ ] Speed glitch
+	- [ ] Digit identity glitch
+	- [ ] Bounce
+
+---
 
 ## Analysis
 
@@ -46,4 +67,4 @@ We need to figure out which quantities are of interest for the plots. Currently,
 
 ### Organization of the latent space
 
-We also need to investigate how the latent space is organized. Hopefully, there is a clean separation of the position and the digit identity encoding in the latent dimensions. If not, one idea could be to try increasing the $\beta$ for the $\beta$-VAE, which is known to disentangle representations in the latent space (cite). But regardless, the point would be to show that multiple _features_ of the state prediction error may evoke a signal, but if we only measure the average activity across serotonergic neurons in the dorsal raphe nucleus (DRN), as for instance is done with fiber photometry, then we expect the strongest signal (prediction error) when all the features of the state are disrupted. Given that we as the experimenters know which features have been manipulated, we can regress the activity of the neurons that are responsive for that signal to show that different neurons indicate the prediction error of specific latent features.
+We also need to investigate how the latent space is organized. Hopefully, there is a clean separation of the position and the digit identity encoding in the latent dimensions. If not, one idea could be to try increasing the $\beta$ for the $\beta$-VAE, which is known to disentangle representations in the latent space (cite). But regardless, the point would be to show that multiple *features* of the state prediction error may evoke a signal, but if we only measure the average activity across serotonergic neurons in the dorsal raphe nucleus (DRN), as for instance is done with fiber photometry, then we expect the strongest signal (prediction error) when all the features of the state are disrupted. Given that we as the experimenters know which features have been manipulated, we can regress the activity of the neurons that are responsive for that signal to show that different neurons indicate the prediction error of specific latent features.
