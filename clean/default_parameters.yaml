@@ -2,7 +2,7 @@
 
 hidden_dim : 128
 latent_dim : 32
-RNN_dim : 32
+RNN_dim : 64
 img_size : 64
 
 batch_size : 64
