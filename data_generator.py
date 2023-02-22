@@ -1,8 +1,7 @@
 ###########################################################################################
 #
 # Module to generate custom moving mnist video datasets
-#
-# source: https://gist.github.com/tencia/afb129122a64bde3bd0c
+# refactored version of https://gist.github.com/tencia/afb129122a64bde3bd0c
 #
 ###########################################################################################
 
@@ -16,6 +15,76 @@ import numpy as np
 from PIL import Image
 
 
+# helper functions copied from moving_mnist.py
+def arr_from_img(image, mean: float = 0, std: float = 1) -> np.ndarray:
+    """
+    Get normalized np.float32 arrays of shape (width, height, channel) from image
+    """
+    width, height = image.size
+    arr = image.getdata()
+    channel = int(np.product(arr.size) / (width * height))
+
+    return (
+        np.asarray(arr, dtype=np.float32)
+        .reshape((height, width, channel))
+        .transpose(2, 1, 0)
+        / 255.0
+        - mean
+    ) / std
+
+
+def get_image_from_array(
+    x: np.ndarray, index: int, mean: float = 0, std: float = 1
+) -> np.ndarray:
+    """
+    Args:
+        x: Dataset of shape N x C x W x H
+        index: Index of image we want to fetch
+        mean: Mean to add
+        std: Standard Deviation to add
+    Returns:
+        Image with dimensions H x W x C or H x W if it's a single channel image
+    """
+    channel, width, height = x.shape[1], x.shape[2], x.shape[3]
+    ret = (
+        (((x[index] + mean) * 255.0) * std)
+        .reshape(channel, width, height)
+        .transpose(2, 1, 0)
+        .clip(0, 255)
+        .astype(np.uint8)
+    )
+    if channel == 1:
+        ret = ret.reshape(height, width)
+    return ret
+
+
+def load_dataset(training: bool = True) -> np.ndarray:
+    """loads mnist from web on demand"""
+
+    if sys.version_info[0] == 2:
+        from urllib import urlretrieve
+    else:
+        from urllib.request import urlretrieve
+
+    def download(file_name: str, source: str = "http://yann.lecun.com/exdb/mnist/"):
+        print(f"Downloading  {file_name}")
+        urlretrieve(source + file_name, file_name)
+
+    import gzip
+
+    def load_mnist_images(file_name: str) -> np.ndarray:
+        if not os.path.exists(file_name):
+            download(file_name)
+        with gzip.open(file_name, "rb") as f:
+            data = np.frombuffer(f.read(), np.uint8, offset=16)
+        data = data.reshape(-1, 1, 28, 28).transpose(0, 1, 3, 2)
+        return data / np.float32(255)
+
+    if training:
+        return load_mnist_images("train-images-idx3-ubyte.gz")
+    return load_mnist_images("t10k-images-idx3-ubyte.gz")
+
+
 @dataclass
 class VideoConfig:
     """Configuration for the Moving MNIST dataset"""
@@ -25,7 +94,6 @@ class VideoConfig:
     original_size: int = 28
     nums_per_image: int = 2
     shape: tuple[int, int] = (64, 64)
-    glitch_frame: int = 0
 
 
 class TrajectoryGenerator(ABC):
@@ -137,74 +205,105 @@ class PositionGlitchTrajectoryGenerator(TrajectoryGenerator):
         return np.asarray(list_of_positions)
 
 
-# helper functions copied from moving_mnist.py
-def arr_from_img(image, mean: float = 0, std: float = 1) -> np.ndarray:
-    """
-    Get normalized np.float32 arrays of shape (width, height, channel) from image
-    """
-    width, height = image.size
-    arr = image.getdata()
-    channel = int(np.product(arr.size) / (width * height))
+@dataclass
+class MNISTSampler(ABC):
+    """Abstract base class for sampling MNIST digits"""
 
-    return (
-        np.asarray(arr, dtype=np.float32)
-        .reshape((height, width, channel))
-        .transpose(2, 1, 0)
-        / 255.0
-        - mean
-    ) / std
+    max_idx: int = 60_000
+    config: VideoConfig = VideoConfig()
 
+    def _sample_ids_for_frame(self) -> np.ndarray:
+        """Sample MNIST digits' indices for one frame"""
+        return np.random.randint(0, self.max_idx, self.config.nums_per_image)
 
-def get_image_from_array(
-    x: np.ndarray, index: int, mean: float = 0, std: float = 1
-) -> np.ndarray:
-    """
-    Args:
-        x: Dataset of shape N x C x W x H
-        index: Index of image we want to fetch
-        mean: Mean to add
-        std: Standard Deviation to add
-    Returns:
-        Image with dimensions H x W x C or H x W if it's a single channel image
-    """
-    channel, width, height = x.shape[1], x.shape[2], x.shape[3]
-    ret = (
-        (((x[index] + mean) * 255.0) * std)
-        .reshape(channel, width, height)
-        .transpose(2, 1, 0)
-        .clip(0, 255)
-        .astype(np.uint8)
-    )
-    if channel == 1:
-        ret = ret.reshape(height, width)
-    return ret
+    @abstractmethod
+    def _sample_ids_for_trajectory(self) -> np.ndarray:
+        """Map the MNIST digits' indices across the length of the trajectory"""
+
+    @abstractmethod
+    def sample_ids_for_dataset(self) -> np.ndarray:
+        """Sample MNIST digits' indices for the whole dataset"""
 
 
-def load_dataset(training: bool = True) -> np.ndarray:
-    """loads mnist from web on demand"""
+class StandardMNISTSampler(MNISTSampler):
+    """Standard Moving MNIST sampler"""
 
-    if sys.version_info[0] == 2:
-        from urllib import urlretrieve
-    else:
-        from urllib.request import urlretrieve
+    def _sample_ids_for_trajectory(self) -> np.ndarray:
+        return np.broadcast_to(
+            self._sample_ids_for_frame(),
+            shape=(self.config.num_frames, self.config.nums_per_image),
+        )
 
-    def download(file_name: str, source: str = "http://yann.lecun.com/exdb/mnist/"):
-        print(f"Downloading  {file_name}")
-        urlretrieve(source + file_name, file_name)
+    def sample_ids_for_dataset(self) -> np.ndarray:
+        data = [
+            self._sample_ids_for_trajectory() for _ in range(self.config.num_images)
+        ]
+        return np.asarray(data)
 
-    import gzip
 
-    def load_mnist_images(file_name: str) -> np.ndarray:
-        if not os.path.exists(file_name):
-            download(file_name)
-        with gzip.open(file_name, "rb") as f:
-            data = np.frombuffer(f.read(), np.uint8, offset=16)
-        data = data.reshape(-1, 1, 28, 28).transpose(0, 1, 3, 2)
-        return data / np.float32(255)
+@dataclass
+class MovingMNISTFactory:
+    """Moving MNIST dataset generator factory class."""
 
-    if training:
-        return load_mnist_images("train-images-idx3-ubyte.gz")
-    return load_mnist_images("t10k-images-idx3-ubyte.gz")
+    trajectory_generator: TrajectoryGenerator
+    mnist_sampler: MNISTSampler
+    mnist_data: np.ndarray  # load with load_dataset(True)
+    config: VideoConfig = VideoConfig()
+
+    def _map_digits_to_positions_single_image(
+        self, mnist_ids: np.ndarray, positions: np.ndarray
+    ) -> np.ndarray:
+        """Map the MNIST digits to the positions in each trajectory"""
+        canvas_combined = np.zeros((1, *self.config.shape), dtype=np.float32)
+
+        for mnist_idx, position in zip(mnist_ids, positions):
+            mnist_image = Image.fromarray(
+                get_image_from_array(self.mnist_data, mnist_idx)
+            ).resize(
+                (self.config.original_size, self.config.original_size), Image.ANTIALIAS
+            )
+            canvas = Image.new("L", self.config.shape)
+            canvas.paste(mnist_image, tuple(position.astype(int)))
+            canvas_combined += arr_from_img(canvas)
+
+        final_image = (
+            (canvas_combined * 255)
+            .clip(0, 255)
+            .astype(np.uint8)
+            .reshape(self.config.shape)
+        )
+
+        return final_image.T
+
+    def _map_digits_to_positions(self, mnist_ids: np.ndarray, positions: np.ndarray):
+        """Map the MNIST digits to the positions in the whole dataset"""
+        # do it with np.apply_over_axes(); currently dumb but works
+
+        dataset = np.empty((positions.shape[0], positions.shape[1], *self.config.shape))
+
+        for n in range(positions.shape[0]):
+            for frame_idx in range(positions.shape[1]):
+                dataset[
+                    n, frame_idx, :, :
+                ] = self._map_digits_to_positions_single_image(
+                    mnist_ids[n, frame_idx, :], positions[n, frame_idx, :, :]
+                )
+        return dataset
+
+    def make(self) -> np.ndarray:
+        """Make the Moving MNIST dataset"""
+        mnist_ids = self.mnist_sampler.sample_ids_for_dataset()
+        positions = self.trajectory_generator.generate()
+
+        return self._map_digits_to_positions(mnist_ids, positions)
+
+    def save(self, path: str, dataset: np.ndarray) -> None:
+        """Save the Moving MNIST dataset to a file"""
+        np.save(path, dataset)
+
+    def load(self, path: str) -> np.ndarray:
+        """Load the Moving MNIST dataset from a file"""
+        return np.load(path)
 
 
 if __name__ == "__main__":
