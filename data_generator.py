@@ -107,26 +107,24 @@ class TrajectoryGenerator(ABC):
 
     def __init__(self, config: VideoConfig = VideoConfig()) -> None:
         self.config = config
-        self.limits = self.get_movement_limits(config)
 
-        direction = self.get_random_direction(config.nums_per_image)
-        speed = self.get_random_speed(config.nums_per_image)
+        self.position = self.get_random_position()
 
-        self.velocity = self.get_initial_velocity(direction, speed)
-        self.position = self.get_initial_position(self.config, *self.limits)
+        direction = self.get_random_direction()
+        speed = self.get_random_speed()
 
-    @staticmethod
-    def get_random_direction(nums_per_image: int = 2) -> np.ndarray:
+        self.velocity = self.compute_velocity(direction, speed)
+
+    def get_random_direction(self) -> np.ndarray:
         """Get a random direction for the Moving MNIST trajectory"""
-        return np.pi * (np.random.rand(nums_per_image) * 2 - 1)
+        return np.pi * (np.random.rand(self.config.nums_per_image) * 2 - 1)
 
-    @staticmethod
-    def get_random_speed(nums_per_image: int = 2) -> np.ndarray:
+    def get_random_speed(self) -> np.ndarray:
         """Get a random speed for the Moving MNIST trajectory"""
-        return np.random.randint(5, size=nums_per_image) + 2
+        return np.random.randint(5, size=self.config.nums_per_image) + 2
 
     @staticmethod
-    def get_initial_velocity(direction: np.ndarray, speed: np.ndarray) -> np.ndarray:
+    def compute_velocity(direction: np.ndarray, speed: np.ndarray) -> np.ndarray:
         """Get the initial velocity for the Moving MNIST trajectory"""
         return np.asarray(
             [
@@ -135,31 +133,29 @@ class TrajectoryGenerator(ABC):
             ]
         )
 
-    @staticmethod
-    def get_movement_limits(config: VideoConfig) -> tuple[float, float]:
+    @property
+    def movement_limits(self) -> tuple[float, float]:
         """Get the limits for the Moving MNIST trajectory"""
         return (
-            config.shape[0] - config.original_size,
-            config.shape[1] - config.original_size,
+            self.config.shape[0] - self.config.original_size,
+            self.config.shape[1] - self.config.original_size,
         )
 
-    @staticmethod
-    def get_initial_position(
-        config: VideoConfig, x_lim: float, y_lim: float
-    ) -> np.ndarray:
+    def get_random_position(self) -> np.ndarray:
         """Get the initial position for the Moving MNIST trajectory"""
+        x_lim, y_lim = self.movement_limits
         return np.asarray(
             [
                 (np.random.rand() * x_lim, np.random.rand() * y_lim)
-                for _ in range(config.nums_per_image)
+                for _ in range(self.config.nums_per_image)
             ]
         )
 
-    def bounce_on_wall(self, pos: np.ndarray, next_pos: np.ndarray) -> None:
+    def bounce_on_wall(self, next_pos: np.ndarray) -> None:
         """Check if the MNIST digit hit the wall and bounce it off."""
         for i, pos in enumerate(next_pos):
             for j, coord in enumerate(pos):
-                if coord < -2 or coord > self.limits[j] + 2:
+                if coord < -2 or coord > self.movement_limits[j] + 2:
                     self.velocity[i] = list(
                         list(self.velocity[i][:j])
                         + [-1 * self.velocity[i][j]]
@@ -185,14 +181,13 @@ class StandardTrajectoryGenerator(TrajectoryGenerator):
         list_of_positions = [self.position]
 
         for _ in range(self.config.num_frames - 1):
-            self.bounce_on_wall(self.position, self.position + self.velocity)
+            self.bounce_on_wall(next_pos=self.position + self.velocity)
             self.position = self.position + self.velocity
             list_of_positions.append(self.position)
 
         return np.asarray(list_of_positions)
 
 
-@dataclass
 class PositionGlitchTrajectoryGenerator(TrajectoryGenerator):
     """Moving MNIST trajectory generator with position glitches"""
 
@@ -200,11 +195,33 @@ class PositionGlitchTrajectoryGenerator(TrajectoryGenerator):
         list_of_positions = [self.position]
 
         for frame_idx in range(self.config.num_frames - 1):
-            self.bounce_on_wall(self.position, self.position + self.velocity)
+            self.bounce_on_wall(next_pos=self.position + self.velocity)
             self.position = self.position + self.velocity
 
             if frame_idx == glitch_frame:
-                self.position = self.get_initial_position(self.config, *self.limits)
+                self.position = self.get_random_position()
+
+            list_of_positions.append(self.position)
+
+        return np.asarray(list_of_positions)
+
+
+class BetterPositionGlitchTrajectoryGenerator(TrajectoryGenerator):
+    """Moving MNIST trajectory generator with position glitches"""
+
+    def _offset_position(self) -> np.ndarray:
+        """Offset the position of the Moving MNIST digits"""
+        return self.position  # change later
+
+    def _generate_single(self, glitch_frame: int = 10) -> np.ndarray:
+        list_of_positions = [self.position]
+
+        for frame_idx in range(self.config.num_frames - 1):
+            self.bounce_on_wall(next_pos=self.position + self.velocity)
+            self.position = self.position + self.velocity
+
+            if frame_idx == glitch_frame:
+                self.position = self._offset_position()
 
             list_of_positions.append(self.position)
 
@@ -318,7 +335,7 @@ def main():
     print("Generating standard Moving MNIST dataset...\n")
 
     config = VideoConfig()
-    trajectory_generator = StandardTrajectoryGenerator(config)
+    trajectory_generator = PositionGlitchTrajectoryGenerator(config)
     mnist_sampler = StandardMNISTSampler(config=config)
     mnist_data = load_dataset(training=True)
 
@@ -329,7 +346,7 @@ def main():
         config=config,
     )
     dataset = factory.make()
-    factory.save("test_factory_data.npy", dataset)
+    factory.save("./data/test_factory_data_pos_glitch.npy", dataset)
 
     print("\nDone! Saved to data/test_factory_data.npy")
 
