@@ -55,10 +55,11 @@ class Decoder(nn.Module):
 
 class VAE(nn.Module):
     """ Variational Autoencoder """
-    def __init__(self, img_channels, latent_size):
+    def __init__(self, img_channels, latent_size,beta = 1):
         super(VAE, self).__init__()
         self.encoder = Encoder(img_channels, latent_size)
         self.decoder = Decoder(img_channels, latent_size)
+        self.beta = beta
 
     def forward(self, x): # pylint: disable=arguments-differ
         mu, logsigma = self.encoder(x)
@@ -73,4 +74,10 @@ class VAE(nn.Module):
     def loss_function(self, recon_x, x, mu, logsigma):
         BCE = F.binary_cross_entropy(recon_x, x, size_average=False)
         KLD = -0.5 * torch.sum(1 + logsigma - mu.pow(2) - logsigma.exp())
-        return BCE + KLD
+        return BCE + self.beta*KLD
+    
+    def encoder_pass(self,x):
+        return self.encoder(x)
+    
+    def decoder_pass(self,z):
+        return self.decoder(z)

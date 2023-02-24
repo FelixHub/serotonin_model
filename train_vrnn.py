@@ -2,7 +2,7 @@ import numpy as np
 import torch 
 from tqdm import tqdm
 import yaml
-from models.vrnn import VRNN
+from models.vrnn import VRNN, VRNN_OLD
 import sys
 import argparse
 from datetime import datetime
@@ -30,7 +30,7 @@ def main(params_path,model_path):
         print('no model path given, training from scratch using default parameters.')
         with open(params_path) as file :
             parameters = yaml.load(file,Loader=yaml.FullLoader)
-        model = VRNN(img_size=parameters['img_size'],
+        model = VRNN_OLD(img_size=parameters['img_size'],
                      hidden_dim=parameters['hidden_dim'],
                      latent_dim=parameters['latent_dim'],
                      RNN_dim=parameters['RNN_dim'])
@@ -45,7 +45,7 @@ def main(params_path,model_path):
             print('model parameters not found, trying to use default parameters.')
             with open(params_path) as file :
                 parameters = yaml.load(file,Loader=yaml.FullLoader)
-        model = VRNN(img_size=parameters['img_size'],
+        model = VRNN_OLD(img_size=parameters['img_size'],
                      hidden_dim=parameters['hidden_dim'],
                      latent_dim=parameters['latent_dim'],
                      RNN_dim=parameters['RNN_dim'])

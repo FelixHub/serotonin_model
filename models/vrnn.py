@@ -141,7 +141,7 @@ class VRNN_OLD(nn.Module):
 
     def __init__(self, img_size=64, hidden_dim=256, latent_dim=16, RNN_dim=256, CNN_channels=32):
 
-        super(VRNN, self).__init__()
+        super(VRNN_OLD, self).__init__()
 
         self.hidden_dim = hidden_dim
         self.latent_dim = latent_dim
@@ -279,3 +279,44 @@ class VRNN_OLD(nn.Module):
         self.z_prior_logvar = self.prior_logvar(prior_encoder_output)
 
         return y,  self.z_mean, self.z_logvar, self.z_prior_mean, self.z_prior_logvar, self.z
+    
+    def loss_function(self,x_reconstructed, x, mean, logvar, mean_prior=None, logvar_prior=None):
+        if mean_prior is None :
+            mean_prior = torch.zeros_like(mean)
+        if logvar_prior is None :
+            logvar_prior = torch.zeros_like(logvar)
+        # reconstruction loss
+        recon_loss = F.binary_cross_entropy(x_reconstructed, x,reduction='sum')
+        # KL divergence
+        kl_loss = -0.5 * torch.sum(logvar - logvar_prior - torch.div((logvar.exp() + (mean - mean_prior).pow(2)), logvar_prior.exp()+1e-10))
+        return recon_loss + kl_loss
+
+    def encoder_pass(self,x):
+        '''Here we want to look at the latent space of the VRNN, so we get as input only one image of size (1,1,64,64)'''
+        print('x.shape',x.shape)
+        y,  z_mean, z_logvar, z_prior_mean, z_prior_logvar, z = self.forward(x)
+        print('z_mean.shape',z_mean.shape)
+        return z_mean[0],z_logvar[0]
+    
+    def decoder_pass(self,z):
+        '''Here we want to look at the latent space of the VRNN, so we get as input only a latent variable of size (1,1,32)'''
+        batch_size,_ = z.shape
+
+        h_t = torch.zeros((batch_size, self.rnn_dim)).to(device) # the initial hidden state coudl be different from 0 ... (random ?)
+
+        z_t = z
+
+        # decode
+        decoder_input = torch.cat((z_t,h_t),dim=1)
+        decoder_output = self.decoder(decoder_input)
+        mean_phi_z_t = self.dec_mean(decoder_output) # for now we will not sample from the decoder
+
+        # reconstruction of the observation with convolutional layers
+        phi_z_t = mean_phi_z_t.view(-1, self.CNN_channels, 12, 12)
+        #print('before deconv',phi_z_t.shape)
+        y_t = self.relu(self.dec_conv1(phi_z_t))
+        #print('after first deconv',y_t.shape)
+        y_t = torch.sigmoid(self.dec_conv2(y_t))
+        # print('after second deconv',y_t.shape)
+
+        return y_t
