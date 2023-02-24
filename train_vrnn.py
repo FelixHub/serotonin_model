@@ -2,7 +2,7 @@ import numpy as np
 import torch 
 from tqdm import tqdm
 import yaml
-from vrnn import VRNN
+from models.vrnn import VRNN
 import sys
 import argparse
 from datetime import datetime
