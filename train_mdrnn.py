@@ -96,7 +96,7 @@ def main(params_path,model_path,model_vae_path):
             x = torch.reshape(x,(-1,1,64,64)).float().to(device)
             latents = vae_model.encoder(x)[0]
             # x = torch.transpose(torch.reshape(x,(-1,20,64,64)),0,1).float().to(device)
-            latents = torch.transpose(torch.reshape(latents,(-1,20,32)),0,1)
+            latents = torch.transpose(torch.reshape(latents,(-1,20,parameters['latent_dim_mdrnn'])),0,1)
             seq_len, batch_size,_ = latents.shape
 
             if model.memory == 'rnn':
@@ -138,6 +138,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Command line options")
     parser.add_argument("--params_path",type=str,dest="params_path",default='default_parameters.yaml')
     parser.add_argument("--model_path",type=str,dest="model_path",default=None)
-    parser.add_argument("--model_vae_path",type=str,dest="model_vae_path",default=None)
+    parser.add_argument("--vae_model_path",type=str,dest="model_vae_path",default=None)
     args = parser.parse_args(sys.argv[1:])
     main(**{k: v for (k, v) in vars(args).items()})
