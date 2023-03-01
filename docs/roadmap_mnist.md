@@ -10,6 +10,7 @@ We would like to cover the following experimental manipulations:
 - Digit identity glitch
 - Bounce
 - Speed glitch
+- Direction glitch
 
 ### Implementation
 
@@ -43,17 +44,18 @@ The goal is the design modular code generating trajectories. For v0.2, the focus
 
 #### v0.3: Add classes for required manipulations
 
-- [ ] Trajectory generator
-	- [/] Position glitch
-	- [ ] Speed glitch
-	- [ ] Bounce
-- [ ] MNIST sampler
-	- [ ] Digit identity glitch
-- [ ] Moving MNIST factories
-	- [ ] Position glitch
-	- [ ] Speed glitch
-	- [ ] Digit identity glitch
-	- [ ] Bounce
+- [x] Trajectory generator
+	- [x] Standard
+	- [x] Position glitch
+		- [x] Random
+		- [x] Offset
+	- [x] Speed glitch
+	- [x] Direction glitch
+	- [x] Bounce
+- [x] MNIST sampler
+	- [x] Standard
+	- [x] Digit identity glitch
+- [x] Moving MNIST factory
 
 ---
 
