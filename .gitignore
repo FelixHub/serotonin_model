@@ -2,3 +2,4 @@ data/
 model/
 saved_models/
 local_legacy/
+__pycache__/
