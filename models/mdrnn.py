@@ -23,21 +23,21 @@ def gmm_loss(batch,mus,sigmas,logpi):
 
 class MDRNN(nn.Module):
 
-    def __init__(self, latents, actions, hiddens, gaussians,memory ='rnn'):
+    def __init__(self, latent_dim, action_dim, hidden_dim, gaussians_nb,memory ='rnn'):
         super().__init__()
-        self.latents = latents
-        self.actions = actions
-        self.hiddens = hiddens
-        self.gaussians = gaussians
+        self.latent_dim = latent_dim
+        self.action_dim = action_dim
+        self.hidden_dim = hidden_dim
+        self.gaussians_nb = gaussians_nb
 
         self.memory = memory
 
-        self.gmm_linear = nn.Linear(hiddens, (2 * latents + 1) * gaussians ) # +2 for reward and termination but we don't care here
+        self.gmm_linear = nn.Linear(hidden_dim, (2 * latent_dim + 1) * gaussians_nb ) # +2 for reward and termination but we don't care here
 
         if memory == 'rnn':
-            self.rnn = nn.RNN(latents + actions, hiddens)
+            self.rnn = nn.RNN(latent_dim + action_dim, hidden_dim)
         else : 
-            self.rnn = nn.LSTM(latents + actions, hiddens)
+            self.rnn = nn.LSTM(latent_dim + action_dim, hidden_dim)
 
     def forward(self,action,latent,hidden):
 
@@ -52,17 +52,17 @@ class MDRNN(nn.Module):
 
         out_full = self.gmm_linear(out_rnn)
 
-        stride = self.gaussians * self.latents
+        stride = self.gaussians_nb * self.latent_dim
 
         mus = out_full[:, :stride]
-        mus = mus.view(-1, self.gaussians, self.latents)
+        mus = mus.view(-1, self.gaussians_nb, self.latent_dim)
 
         sigmas = out_full[:, stride:2 * stride]
-        sigmas = sigmas.view(-1, self.gaussians, self.latents)
+        sigmas = sigmas.view(-1, self.gaussians_nb, self.latent_dim)
         sigmas = torch.exp(sigmas)
 
-        pi = out_full[:, 2 * stride:2 * stride + self.gaussians]
-        pi = pi.view(-1, self.gaussians)
+        pi = out_full[:, 2 * stride:2 * stride + self.gaussians_nb]
+        pi = pi.view(-1, self.gaussians_nb)
         logpi = F.log_softmax(pi, dim=-1)
 
         return mus, sigmas, logpi, next_hidden
