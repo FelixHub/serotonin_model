@@ -2,6 +2,7 @@
 data/
 model/
 figures/
+saved_models/
 
 # notebook checkpoints
 .ipynb_checkpoints
