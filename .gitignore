@@ -1,5 +1,19 @@
+# local folders
 data/
 model/
 saved_models/
+figures/
 local_legacy/
+
+# notebook checkpoints
+.ipynb_checkpoints
+
+# python workbench files
+workbench*.py
+
+# training images gz files
+*.gz
+
+# python cache files
 __pycache__/
+*.pyc
