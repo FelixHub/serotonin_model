@@ -1,4 +1,6 @@
 [MASTER]
+init-hook='import sys; sys.path.append("./src/")'
 docstring-min-length = 10
-disable = missing-function-docstring, missing-class-docstring, missing-module-docstring, import-outside-toplevel
+disable = missing-function-docstring, missing-class-docstring, missing-module-docstring, import-outside-toplevel, unspecified-encoding
 good-names = i, j, x, y, df, id, p, lr
+generated-members=numpy.*, torch.*
