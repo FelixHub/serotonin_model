@@ -3,6 +3,7 @@ data/
 model/
 figures/
 saved_models/
+figures/
 local_legacy/
 
 # notebook checkpoints
