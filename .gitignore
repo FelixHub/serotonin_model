@@ -3,6 +3,7 @@ data/
 model/
 figures/
 saved_models/
+local_legacy/
 
 # notebook checkpoints
 .ipynb_checkpoints
@@ -14,5 +15,5 @@ workbench*.py
 *.gz
 
 # python cache files
-__pycache__/
+*__pycache__/
 *.pyc
