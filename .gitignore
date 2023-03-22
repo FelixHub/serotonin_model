@@ -1,5 +1,5 @@
 # local folders
-data/
+data/*mnist_test.npy
 model/
 figures/
 saved_models/
@@ -14,6 +14,7 @@ workbench*.py
 
 # training images gz files
 *.gz
+*ubyte
 
 # python cache files
 *__pycache__/
