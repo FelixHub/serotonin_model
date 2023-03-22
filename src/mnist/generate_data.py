@@ -19,7 +19,7 @@ class StandardDataGenerator:
 class PositionGlitchDataGenerator:
     traj_generator = trajectory_generator.PositionGlitch(config=CONFIG)
     mnist_sampler = digit_sampler.Standard(config=CONFIG)
-    save_name = "position_glitch"
+    save_name = "random_position_glitch"
 
 
 @dataclass
@@ -80,7 +80,7 @@ def main(path="../data/") -> None:
     generate_data(PositionGlitchDataGenerator(), path)
     generate_data(OffsetPositionGlitchDataGenerator(), path)
     generate_data(DirectionGlitchDataGenerator(), path)
-    # generate_data(SpeedGlitchDataGenerator(), path)
+    generate_data(SpeedGlitchDataGenerator(), path)
     generate_data(TimedBounceDataGenerator(), path)
     generate_data(DigitGlitchDataGenerator(), path)
     generate_data(PositionAndDigitGlitchDataGenerator(), path)
