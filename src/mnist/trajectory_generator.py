@@ -156,7 +156,9 @@ class DirectionGlitch(TrajectoryGenerator):
     glitch_frame: int = 10
 
     def _execute_glitch(self) -> None:
-        self.velocity *= -1
+        direction = self.get_random_direction()
+        speed = np.sqrt(self.velocity[:, 0] ** 2 + self.velocity[:, 1] ** 2)
+        self.velocity = self.compute_velocity(direction, speed)
 
 
 @dataclass(kw_only=True)
