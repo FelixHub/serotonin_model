@@ -15,12 +15,17 @@ class TrajectoryGenerator(ABC):
     glitch_frame: int = 0
 
     def __post_init__(self) -> None:
-        self.position = self.get_random_position()
+        self.position, self.velocity = self.reset_position_and_velocity()
+
+    def reset_position_and_velocity(self) -> tuple[np.ndarray, np.ndarray]:
+        position = self.get_random_position()
 
         direction = self.get_random_direction()
         speed = self.get_random_speed()
 
-        self.velocity = self.compute_velocity(direction, speed)
+        velocity = self.compute_velocity(direction, speed)
+
+        return position, velocity
 
     def get_random_direction(self) -> np.ndarray:
         """Get a random direction for the Moving MNIST trajectory"""
@@ -71,6 +76,7 @@ class TrajectoryGenerator(ABC):
 
     def _generate_single(self) -> np.ndarray:
         """Generate a single trajectory for the moving MNIST dataset"""
+        self.position, self.velocity = self.reset_position_and_velocity()
         list_of_positions = [self.position]
 
         for frame_idx in range(self.config.num_frames - 1):
@@ -159,9 +165,10 @@ class TimedBounce(TrajectoryGenerator):
 
     glitch_frame: int = 5
 
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        self.position = self.calculate_initial_position_for_bounce()
+    def reset_position_and_velocity(self) -> None:
+        self.position, self.velocity = super().reset_position_and_velocity()
+        position = self.calculate_initial_position_for_bounce()
+        return position, self.velocity
 
     def calculate_initial_position_for_bounce(self) -> np.ndarray:
         """Calculate the initial position to time bounce at glitch_frame"""
