@@ -150,7 +150,17 @@ class SpeedGlitch(TrajectoryGenerator):
 
 
 @dataclass(kw_only=True)
-class DirectionGlitch(TrajectoryGenerator):
+class ReverseDirectionGlitch(TrajectoryGenerator):
+    """Moving MNIST trajectory generator with direction glitches"""
+
+    glitch_frame: int = 10
+
+    def _execute_glitch(self) -> None:
+        self.velocity = -1 * self.velocity
+
+
+@dataclass(kw_only=True)
+class RandomDirectionGlitch(TrajectoryGenerator):
     """Moving MNIST trajectory generator with direction glitches"""
 
     glitch_frame: int = 10

@@ -30,10 +30,17 @@ class OffsetPositionGlitchDataGenerator:
 
 
 @dataclass
-class DirectionGlitchDataGenerator:
-    traj_generator = trajectory_generator.DirectionGlitch(config=CONFIG)
+class ReverseDirectionGlitchDataGenerator:
+    traj_generator = trajectory_generator.ReverseDirectionGlitch(config=CONFIG)
     mnist_sampler = digit_sampler.Standard(config=CONFIG)
-    save_name = "direction_glitch"
+    save_name = "reverse_direction_glitch"
+
+
+@dataclass
+class RandomDirectionGlitchDataGenerator:
+    traj_generator = trajectory_generator.RandomDirectionGlitch(config=CONFIG)
+    mnist_sampler = digit_sampler.Standard(config=CONFIG)
+    save_name = "random_direction_glitch"
 
 
 @dataclass
@@ -79,7 +86,8 @@ def main(path="../data/") -> None:
     generate_data(StandardDataGenerator(), path)
     generate_data(PositionGlitchDataGenerator(), path)
     generate_data(OffsetPositionGlitchDataGenerator(), path)
-    generate_data(DirectionGlitchDataGenerator(), path)
+    generate_data(ReverseDirectionGlitchDataGenerator(), path)
+    generate_data(RandomDirectionGlitchDataGenerator(), path)
     generate_data(SpeedGlitchDataGenerator(), path)
     generate_data(TimedBounceDataGenerator(), path)
     generate_data(DigitGlitchDataGenerator(), path)
