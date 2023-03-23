@@ -1,5 +1,5 @@
 # local folders
-data/*mnist_test.npy
+data/
 model/
 figures/
 saved_models/
