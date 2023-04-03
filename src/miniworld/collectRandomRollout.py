@@ -10,7 +10,7 @@ train_args = dict(
     proba_change_motor_gain=0,
     min_section_length=5,
     max_section_length=10,
-    training=True,
+    training=False,
     max_episode_steps=100,
 )
 
