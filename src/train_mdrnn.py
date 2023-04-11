@@ -160,7 +160,6 @@ def main(params_path, model_path, model_vae_path):
         "saved_models/vae-mdrnn/" + model_name + ".pt",
     )
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Command line options")
     parser.add_argument(

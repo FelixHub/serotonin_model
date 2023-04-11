@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class Encoder(nn.Module): # pylint: disable=too-many-instance-attributes
+class Encoder(nn.Module):
     """ VAE encoder """
     def __init__(self, img_channels, latent_dim):
         super(Encoder, self).__init__()
@@ -19,7 +19,7 @@ class Encoder(nn.Module): # pylint: disable=too-many-instance-attributes
         self.fc_logsigma = nn.Linear(2*2*256, latent_dim)
 
 
-    def forward(self, x): # pylint: disable=arguments-differ
+    def forward(self, x):
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
@@ -44,7 +44,7 @@ class Decoder(nn.Module):
         self.deconv3 = nn.ConvTranspose2d(64, 32, 6, stride=2)
         self.deconv4 = nn.ConvTranspose2d(32, img_channels, 6, stride=2)
 
-    def forward(self, x): # pylint: disable=arguments-differ
+    def forward(self, x):
         x = F.relu(self.fc1(x))
         x = x.unsqueeze(-1).unsqueeze(-1)
         x = F.relu(self.deconv1(x))
@@ -61,7 +61,7 @@ class VAE(nn.Module):
         self.decoder = Decoder(img_channels, latent_dim)
         self.beta = beta
 
-    def forward(self, x): # pylint: disable=arguments-differ
+    def forward(self, x): 
         mu, logsigma = self.encoder(x)
         sigma = logsigma.exp()
         eps = torch.randn_like(sigma)
