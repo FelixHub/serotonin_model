@@ -94,6 +94,7 @@ env = PyTorchObsWrapper(env)
 
 trajectories = []
 trajectories_action = []
+nb_rewards= 0
 
 for i_trajectories in tqdm(range(nb_trajectories)):
 
@@ -119,12 +120,18 @@ for i_trajectories in tqdm(range(nb_trajectories)):
         observation, reward, terminated, truncated, info = env.step(action)
         if terminated or truncated:
             observation, info = env.reset()
+            if reward > 0 :
+                nb_rewards += 1
 
     observations = np.stack(observations)
     actions = np.stack(actions)
     
     trajectories.append(observations)
     trajectories_action.append(actions)
+
+print('proportion of rewarded trials :',nb_rewards/nb_trajectories)
+
+
 
 trajectories = np.stack(trajectories)
 trajectories_action = np.stack(trajectories_action)
@@ -136,7 +143,7 @@ env.close()
 
 print("done")
 
-with open('data/agentRollout_observations_2.npy', 'wb') as f:
+with open('data/agentRollout_observations_3.npy', 'wb') as f:
     a = np.save(f, trajectories)
-with open('data/agentRollout_actions_2.npy', 'wb') as f:
+with open('data/agentRollout_actions_3.npy', 'wb') as f:
     a = np.save(f, trajectories_action)
