@@ -12,27 +12,15 @@ from torch.distributions import Categorical
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
 
-args = dict(
-    nb_sections=5,
-    proba_change_motor_gain=1,
-    motor_gains=[0.5,1,2],
-    min_section_length=3,
-    max_section_length=6,
-    training=False,
-    max_episode_steps=200,
-)
 
-'''
 args = dict(
-    nb_sections=2,
+    nb_sections=3,
     proba_change_motor_gain=0,
-    min_section_length=5,
-    max_section_length=10,
+    min_section_length=3,
+    max_section_length=8,
     training=False,
-    max_episode_steps=250,
+    max_episode_steps=100,
 )
-'''
-
 
 class Policy(nn.Module):
     def __init__(self):
@@ -87,7 +75,8 @@ class Policy(nn.Module):
 
 def select_action(state):
     state = torch.from_numpy(state).float().unsqueeze(0).to(device)
-    probs,state_value = policy(state)
+    with torch.no_grad():
+        probs,state_value = policy(state)
     m = Categorical(probs)
     action = m.sample()
     policy.saved_log_probs.append( (m.log_prob(action), state_value) )
@@ -96,30 +85,27 @@ def select_action(state):
 
 policy = Policy().to(device)
 policy.load_state_dict(torch.load('saved_models/miniworld_task.pt'))
-
+policy.eval()
 
 def run_trajectories(nb_trajectories,id_run):
 
     env = gym.make('MiniWorld-TaskHallway-v0', 
                 view="agent", render_mode=None,
                 **args)
-
     env = PyTorchObsWrapper(env)
 
     trajectories = []
     trajectories_action = []
+    nb_rewards= 0
 
-    nb_rewards = 0
     for i_trajectories in tqdm(range(nb_trajectories)):
 
-        '''# we change environment every 10 trials => especially to capture gain changes
-
-        if i_trajectories % 10 == 0 :
+        # we change environment every 10 trials
+        if i_trajectories % 50 == 0 :
             env = gym.make('MiniWorld-TaskHallway-v0', 
                 view="agent", render_mode=None,
                 **args)
             env = PyTorchObsWrapper(env)
-        '''
 
         observations = []
         actions = []
@@ -154,12 +140,15 @@ def run_trajectories(nb_trajectories,id_run):
     trajectories = np.sum(trajectories,axis=-3,keepdims=1)/3
 
     env.close()
-    
-    with open('data/rollout_changing_gain/agentRollout_observations_'+str(id_run)+'.npy', 'wb') as f:
+
+    with open('data/rollout_constant_gain/agentRollout_observations_'+str(id_run)+'.npy', 'wb') as f:
         np.save(f, trajectories)
-    with open('data/rollout_changing_gain/agentRollout_actions_'+str(id_run)+'.npy', 'wb') as f:
+    with open('data/rollout_constant_gain/agentRollout_actions_'+str(id_run)+'.npy', 'wb') as f:
         np.save(f, trajectories_action)
 
+    del trajectories, trajectories_action, env
+    torch.cuda.empty_cache()
 
-for i_run in range(1):
-    run_trajectories(nb_trajectories=1000,id_run=i_run)
+
+i_run = 4
+run_trajectories(nb_trajectories=1000,id_run=i_run)

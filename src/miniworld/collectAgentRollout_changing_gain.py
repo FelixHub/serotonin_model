@@ -9,19 +9,31 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Categorical
 
+
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
 
-nb_trajectories = 500
 
 args = dict(
-    nb_sections=3,
+    nb_sections=1,
+    proba_change_motor_gain=0,
+    min_section_length=10,
+    max_section_length=30,
+    training=False,
+    max_episode_steps=100,
+)
+
+'''
+args = dict(
+    nb_sections=2,
     proba_change_motor_gain=0,
     min_section_length=5,
     max_section_length=10,
     training=False,
-    max_episode_steps=100,
+    max_episode_steps=250,
 )
+'''
+
 
 class Policy(nn.Module):
     def __init__(self):
@@ -76,7 +88,8 @@ class Policy(nn.Module):
 
 def select_action(state):
     state = torch.from_numpy(state).float().unsqueeze(0).to(device)
-    probs,state_value = policy(state)
+    with torch.no_grad():
+        probs,state_value = policy(state)
     m = Categorical(probs)
     action = m.sample()
     policy.saved_log_probs.append( (m.log_prob(action), state_value) )
@@ -85,65 +98,74 @@ def select_action(state):
 
 policy = Policy().to(device)
 policy.load_state_dict(torch.load('saved_models/miniworld_task.pt'))
+policy.eval()
 
+def run_trajectories(nb_trajectories,id_run):
 
-env = gym.make('MiniWorld-TaskHallway-v0', 
-              view="agent", render_mode=None,
-              **args)
-env = PyTorchObsWrapper(env)
+    env = gym.make('MiniWorld-TaskHallway-v0', 
+                view="agent", render_mode=None,
+                **args)
 
-trajectories = []
-trajectories_action = []
-nb_rewards= 0
+    env = PyTorchObsWrapper(env)
 
-for i_trajectories in tqdm(range(nb_trajectories)):
+    trajectories = []
+    trajectories_action = []
 
-    # we change environment every 10 trials
-    if i_trajectories % 50 == 0 :
-        env = gym.make('MiniWorld-TaskHallway-v0', 
-              view="agent", render_mode=None,
-              **args)
-        env = PyTorchObsWrapper(env)
+    nb_rewards = 0
 
-    observations = []
-    actions = []
-    observation, info = env.reset()
+    for i_trajectories in tqdm(range(nb_trajectories)):
 
-    for _ in range(args['max_episode_steps']):
+        # we change environment every 10 trials => especially to capture gain changes
 
-        action,probs = select_action(observation) # agent policy that uses the observation and info
+        if i_trajectories % 10 == 0 :
+            env = gym.make('MiniWorld-TaskHallway-v0', 
+                view="agent", render_mode=None,
+                **args)
+            env = PyTorchObsWrapper(env)
+        
 
-        # we save s_t and a_t
-        actions.append(action)    
-        observations.append(observation)
+        observations = []
+        actions = []
+        observation, info = env.reset()
 
-        observation, reward, terminated, truncated, info = env.step(action)
-        if terminated or truncated:
-            observation, info = env.reset()
-            if reward > 0 :
-                nb_rewards += 1
+        for _ in range(args['max_episode_steps']):
 
-    observations = np.stack(observations)
-    actions = np.stack(actions)
+            action,probs = select_action(observation) # agent policy that uses the observation and info
+
+            # we save s_t and a_t
+            actions.append(action)    
+            observations.append(observation)
+
+            observation, reward, terminated, truncated, info = env.step(action)
+            if terminated or truncated:
+                observation, info = env.reset()
+                if reward > 0 :
+                    nb_rewards += 1
+
+        observations = np.stack(observations)
+        actions = np.stack(actions)
+        
+        trajectories.append(observations)
+        trajectories_action.append(actions)
+
+    print('proportion of rewarded trials :',nb_rewards/nb_trajectories)
+
+    trajectories = np.stack(trajectories)
+    trajectories_action = np.stack(trajectories_action)
+
+    # convert to grayscale
+    trajectories = np.sum(trajectories,axis=-3,keepdims=1)/3
+
+    env.close()
     
-    trajectories.append(observations)
-    trajectories_action.append(actions)
+    with open('data/rollout_changing_gain/agentRollout_observations_'+str(id_run)+'.npy', 'wb') as f:
+        np.save(f, trajectories)
+    with open('data/rollout_changing_gain/agentRollout_actions_'+str(id_run)+'.npy', 'wb') as f:
+        np.save(f, trajectories_action)
 
-print('proportion of rewarded trials :',nb_rewards/nb_trajectories)
+    del trajectories, trajectories_action, env
+    torch.cuda.empty_cache()
 
 
-
-trajectories = np.stack(trajectories)
-trajectories_action = np.stack(trajectories_action)
-
-# convert to grayscale
-trajectories = np.sum(trajectories,axis=-3,keepdims=1)/3
-
-env.close()
-
-print("done")
-
-with open('data/agentRollout_observations_3.npy', 'wb') as f:
-    a = np.save(f, trajectories)
-with open('data/agentRollout_actions_3.npy', 'wb') as f:
-    a = np.save(f, trajectories_action)
+i_run = 4
+run_trajectories(nb_trajectories=500,id_run=i_run)

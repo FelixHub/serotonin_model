@@ -14,9 +14,16 @@ from pyglet.window import key
 
 import miniworld
 
+env_args = dict(
+        nb_sections=5,
+        motor_gains=[1,0.5,1,2,1],
+        sections_length=[4,2,4,8,4],
+        max_episode_steps=20,
+    )
+
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--env-name", default='MiniWorld-TaskHallway-v0') # miniworld.envs.env_ids[0] MiniWorld-OneRoomS6-v0
+parser.add_argument("--env-name", default='MiniWorld-TaskHallwayControl-v0') # miniworld.envs.env_ids[0] MiniWorld-OneRoomS6-v0
 parser.add_argument(
     "--domain-rand", action="store_true", help="enable domain randomization"
 )
@@ -31,7 +38,7 @@ parser.add_argument(
 args = parser.parse_args()
 view_mode = "top" if args.top_view else "agent"
 
-env = gym.make(args.env_name, view=view_mode, render_mode="human")
+env = gym.make(args.env_name, view=view_mode, render_mode="human",**env_args)
 
 if args.no_time_limit:
     env.max_episode_steps = math.inf
@@ -58,6 +65,9 @@ def step(action):
 
     if reward > 0:
         print(f"reward={reward:.2f}")
+
+    if env.step_count == 10 :
+        env.change_gain()
 
     if termination or truncation:
         print("done!")
