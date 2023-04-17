@@ -47,8 +47,10 @@ class MDRNN(nn.Module):
             next_hidden = self.rnn(in_al.unsqueeze(0), hidden.unsqueeze(0))
             out_rnn = next_hidden[0].squeeze(0)
         else :
-            next_hidden = self.rnn(in_al, hidden)
-            out_rnn = next_hidden[0]
+            out = self.rnn(in_al.unsqueeze(0), hidden)
+            out_rnn = out[0].squeeze(0)
+            next_hidden = out[1]
+
 
         out_full = self.gmm_linear(out_rnn)
 

@@ -17,9 +17,9 @@ print(device)
 args = dict(
     nb_sections=1,
     proba_change_motor_gain=0,
-    min_section_length=20,
+    min_section_length=25,
     max_section_length=40,
-    training=False,
+    training=True,
     max_episode_steps=100,
 )
 
@@ -167,14 +167,14 @@ def run_trajectories(nb_trajectories,id_run):
 
     env.close()
     
-    with open('data/rollout_changing_gain/agentRollout_observations_'+str(id_run)+'.npy', 'wb') as f:
+    with open('data/rollout_changing_gain_straight/agentRollout_observations_'+str(id_run)+'.npy', 'wb') as f:
         np.save(f, trajectories)
-    with open('data/rollout_changing_gain/agentRollout_actions_'+str(id_run)+'.npy', 'wb') as f:
+    with open('data/rollout_changing_gain_straight/agentRollout_actions_'+str(id_run)+'.npy', 'wb') as f:
         np.save(f, trajectories_action)
 
     del trajectories, trajectories_action, env
     torch.cuda.empty_cache()
 
 
-i_run = 2
-run_trajectories(nb_trajectories=2000,id_run=i_run)
+i_run = 0
+run_trajectories(nb_trajectories=10,id_run=i_run)

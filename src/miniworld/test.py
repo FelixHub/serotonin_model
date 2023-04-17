@@ -14,16 +14,19 @@ from pyglet.window import key
 
 import miniworld
 
+
 env_args = dict(
-        nb_sections=5,
-        motor_gains=[1,0.5,1,2,1],
-        sections_length=[4,2,4,8,4],
-        max_episode_steps=20,
-    )
+    nb_sections=1,
+    proba_change_motor_gain=0,
+    min_section_length=20,
+    max_section_length=40,
+    training=True,
+    max_episode_steps=100,
+)
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--env-name", default='MiniWorld-TaskHallwayControl-v0') # miniworld.envs.env_ids[0] MiniWorld-OneRoomS6-v0
+parser.add_argument("--env-name", default='MiniWorld-TaskHallway-v0') # miniworld.envs.env_ids[0] MiniWorld-OneRoomS6-v0
 parser.add_argument(
     "--domain-rand", action="store_true", help="enable domain randomization"
 )
