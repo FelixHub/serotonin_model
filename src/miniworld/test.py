@@ -14,6 +14,8 @@ from pyglet.window import key
 
 import miniworld
 
+import numpy as np
+
 
 env_args = dict(
     nb_sections=1,
@@ -69,8 +71,8 @@ def step(action):
     if reward > 0:
         print(f"reward={reward:.2f}")
 
-    if env.step_count == 10 :
-        env.change_gain()
+    if env.step_count % 5 == 0 :
+        env.change_gain(random=False,gain=1,glitch=True,glitch_phase=np.random.choice([-0.8,-0.6,-0.4,-0.2,0,0.2,0.4,0.6,0.8])) # glitch from -0.8 to +0.8 with 0.2 intervals
 
     if termination or truncation:
         print("done!")
