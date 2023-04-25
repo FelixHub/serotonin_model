@@ -5,6 +5,7 @@ figures/
 saved_models/
 figures/
 local_legacy/
+Miniworld-serotoninTask/
 
 # notebook checkpoints
 .ipynb_checkpoints
