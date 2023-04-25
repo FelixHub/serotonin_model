@@ -58,8 +58,3 @@ class DigitGlitch(MNISTSampler):
             ),
         )
         return np.vstack((data_1, data_2))
-
-
-if __name__ == "__main__":
-    print("This module defines the MNIST digit sampler classes.")
-    print("Please use the data_generator.py script to generate data.")

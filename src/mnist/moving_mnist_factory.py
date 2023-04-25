@@ -71,8 +71,3 @@ class MovingMNISTFactory:
     def load(self, path: str) -> np.ndarray:
         """Load the Moving MNIST dataset from a file"""
         return np.load(path)
-
-
-if __name__ == "__main__":
-    print("This module defines the factory classes.")
-    print("Please use the data_generator.py script to generate data.")

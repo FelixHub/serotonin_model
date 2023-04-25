@@ -209,8 +209,3 @@ class TimedBounce(TrajectoryGenerator):
 
     def _execute_glitch(self) -> None:
         return
-
-
-if __name__ == "__main__":
-    print("This module defines the trajectory generator classes.")
-    print("Please use the data_generator.py script to generate data.")
