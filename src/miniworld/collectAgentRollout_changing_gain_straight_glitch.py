@@ -138,7 +138,7 @@ def run_trajectories(nb_trajectories,id_run):
             if (len(gain_change_steps) > 0) and (i_step == gain_change_steps[0]) :
                 env.change_gain(motor_gains=[0.5,1,1.5],
                                 glitch=True,
-                                glitch_phase=np.random.choice([-0.8,-0.6,-0.4,-0.2,0,0.2,0.4,0.6,0.8]))
+                                glitch_phase=np.random.uniform(-0.8,0.8))  # np.random.choice([-0.8,-0.6,-0.4,-0.2,0,0.2,0.4,0.6,0.8])
                 gain_change_steps.pop(0)
 
             action,probs = select_action(observation) # agent policy that uses the observation and info

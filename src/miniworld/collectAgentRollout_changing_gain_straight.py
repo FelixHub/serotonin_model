@@ -177,4 +177,4 @@ def run_trajectories(nb_trajectories,id_run):
 
 
 i_run = 0
-run_trajectories(nb_trajectories=10,id_run=i_run)
+run_trajectories(nb_trajectories=1000,id_run=i_run)
