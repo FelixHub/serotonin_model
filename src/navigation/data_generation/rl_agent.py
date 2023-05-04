@@ -50,10 +50,13 @@ class Policy(nn.Module):
         return action_prob, state_value
 
 
-def select_action(policy, state):
+def select_action(policy, state,training=False):
     state = torch.from_numpy(state).float().unsqueeze(0).to(DEVICE)
-    with torch.no_grad():
+    if training:
         probs, state_value = policy(state)
+    else :
+        with torch.no_grad():
+            probs, state_value = policy(state)
     probs_categorical = Categorical(probs)
     action = probs_categorical.sample()
     policy.saved_log_probs.append((probs_categorical.log_prob(action), state_value))

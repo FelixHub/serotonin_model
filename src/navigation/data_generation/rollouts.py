@@ -6,10 +6,10 @@ import torch
 from miniworld.wrappers import PyTorchObsWrapper
 from tqdm import tqdm
 
-from .agent import DEVICE, Policy, select_action
+from .rl_agent import DEVICE, Policy, select_action
 
 loaded_policy = Policy().to(DEVICE)
-loaded_policy.load_state_dict(torch.load("../saved_models/miniworld_task.pt"))
+loaded_policy.load_state_dict(torch.load("miniworld_agent.pt"))
 loaded_policy.eval()
 
 
@@ -98,6 +98,7 @@ class ChangingGainStraightCollector(BaseCollector):
             gain_change_steps.pop(0)
 
     def initialize_gain_change_steps(self):
+        # we select random tens digit to be the gain change steps of the trajectories
         n_changes = np.random.randint(1, 5)
         return list(
             np.sort(np.random.choice(range(1, 10), size=n_changes, replace=False) * 10)
@@ -110,9 +111,7 @@ class ChangingGainStraightGlitchCollector(ChangingGainStraightCollector):
             self.env.change_gain(
                 motor_gains=[0.5, 1, 1.5],
                 glitch=True,
-                glitch_phase=np.random.choice(
-                    [-0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8]
-                ),
+                glitch_phase=np.random.uniform(-0.8,0.8),
             )
             gain_change_steps.pop(0)
 
@@ -126,7 +125,7 @@ def collect_rollouts():
     ]
 
     for collect_type, collector_class, n_rollouts in rollout_params:
-        env = gym.make("MiniWorld-TaskHallway-v0", view="agent", render_mode=None)
+        env = gym.make("MiniWorld-TaskHallwaySimple-v0", view="agent", render_mode=None)
         collector = collector_class(
             env, loaded_policy, n_rollouts=n_rollouts, id_run=i_run
         )
