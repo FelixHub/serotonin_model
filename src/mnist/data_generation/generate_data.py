@@ -71,7 +71,7 @@ class PositionAndDigitGlitchDataGenerator:
     save_name = "position_and_digit_glitch"
 
 
-def generate_data(data_gen, path="../data/") -> None:
+def generate_data(data_gen, path="../../../data/MNIST/") -> None:
     """Generate data with a given configuration and save it to a given path"""
     factory = MovingMNISTFactory(
         data_gen.traj_generator, data_gen.mnist_sampler, MNIST_DATA, CONFIG
@@ -82,7 +82,7 @@ def generate_data(data_gen, path="../data/") -> None:
     print(f"Data saved to {path+data_gen.save_name}!\n")
 
 
-def main(path="../data/") -> None:
+def main(path="../../../data/MNIST/") -> None:
     generate_data(StandardDataGenerator(), path)
     generate_data(PositionGlitchDataGenerator(), path)
     generate_data(OffsetPositionGlitchDataGenerator(), path)
