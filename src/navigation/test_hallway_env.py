@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 This script allows you to manually control the simulator
 using the keyboard arrows.
@@ -7,28 +5,28 @@ using the keyboard arrows.
 
 import argparse
 import math
-
 import gymnasium as gym
 import pyglet
 from pyglet.window import key
-
 import miniworld
-
 import numpy as np
+import yaml
 
+with open("default_parameters.yaml") as file:
+    default_parameters = yaml.load(file, Loader=yaml.FullLoader)
 
-env_args = dict(
-    nb_sections=1,
-    proba_change_motor_gain=0,
-    min_section_length=20,
-    max_section_length=40,
-    training=True,
-    max_episode_steps=100,
-)
+env_args= dict(
+        min_section_length=default_parameters['min_section_length'],
+        max_section_length=default_parameters['max_section_length'],
+        max_episode_steps=default_parameters['max_episode_steps'],
+        facing_forward=default_parameters['facing_forward'],
+        reset_keep_same_length=default_parameters['reset_keep_same_length'],
+        wall_tex=default_parameters['wall_tex'],
+            )
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--env-name", default='MiniWorld-TaskHallway-v0') # miniworld.envs.env_ids[0] MiniWorld-OneRoomS6-v0
+parser.add_argument("--env-name", default='MiniWorld-TaskHallwaySimple-v0') # miniworld.envs.env_ids[0] MiniWorld-OneRoomS6-v0
 parser.add_argument(
     "--domain-rand", action="store_true", help="enable domain randomization"
 )
@@ -72,7 +70,7 @@ def step(action):
         print(f"reward={reward:.2f}")
 
     if env.step_count % 5 == 0 :
-        env.change_gain(random=False,gain=1,glitch=True,glitch_phase=np.random.choice([-0.8,-0.6,-0.4,-0.2,0,0.2,0.4,0.6,0.8])) # glitch from -0.8 to +0.8 with 0.2 intervals
+        env.change_gain(random=False,gain=1,glitch=True,glitch_phase=np.random.uniform(-0.8,0.8)) # glitch from -0.8 to +0.8 with 0.2 intervals
 
     if termination or truncation:
         print("done!")

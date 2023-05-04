@@ -9,17 +9,17 @@ from tqdm import tqdm
 from .rl_agent import DEVICE, Policy, select_action
 
 loaded_policy = Policy().to(DEVICE)
-loaded_policy.load_state_dict(torch.load("miniworld_agent.pt"))
+loaded_policy.load_state_dict(torch.load("navigation/data_generation/miniworld_agent.pt"))
 loaded_policy.eval()
 
 
 class BaseCollector(ABC):
-    def __init__(self, env, policy, n_rollouts, id_run):
+    def __init__(self, env, policy, n_rollouts, id_run,env_args):
         self.env = env
         self.policy = policy
         self.n_rollouts = n_rollouts
         self.id_run = id_run
-        self.args = {}
+        self.args = env_args
 
     @abstractmethod
     def strategy(self, i_step, gain_change_steps):
@@ -31,9 +31,6 @@ class BaseCollector(ABC):
         n_rewards = 0
 
         for i_rollouts in tqdm(range(self.n_rollouts)):
-            if i_rollouts % 50 == 0:
-                self.env = PyTorchObsWrapper(self.env)
-
             observations = []
             actions = []
             observation, _ = self.env.reset()
@@ -65,32 +62,16 @@ class BaseCollector(ABC):
 
 
 class ConstantGainCollector(BaseCollector):
-    def __init__(self, env, policy, n_rollouts, id_run):
-        super().__init__(env, policy, n_rollouts, id_run)
-        self.args = dict(
-            n_sections=3,
-            proba_change_motor_gain=0,
-            min_section_length=3,
-            max_section_length=8,
-            training=False,
-            max_episode_steps=100,
-        )
+    def __init__(self, env, policy, n_rollouts, id_run,env_args):
+        super().__init__(env, policy, n_rollouts, id_run,env_args)
 
     def strategy(self, i_step, gain_change_steps):
         pass
 
 
 class ChangingGainStraightCollector(BaseCollector):
-    def __init__(self, env, policy, n_rollouts, id_run):
-        super().__init__(env, policy, n_rollouts, id_run)
-        self.args = dict(
-            n_sections=1,
-            proba_change_motor_gain=0,
-            min_section_length=25,
-            max_section_length=40,
-            training=True,
-            max_episode_steps=100,
-        )
+    def __init__(self, env, policy, n_rollouts, id_run,env_args):
+        super().__init__(env, policy, n_rollouts, id_run,env_args)
 
     def strategy(self, i_step, gain_change_steps):
         if (len(gain_change_steps) > 0) and (i_step == gain_change_steps[0]):
@@ -116,25 +97,33 @@ class ChangingGainStraightGlitchCollector(ChangingGainStraightCollector):
             gain_change_steps.pop(0)
 
 
-def collect_rollouts():
-    i_run = 4
+def collect_rollouts(i_run=0,nb_trajectories = 1000,env_args= dict(
+                                        min_section_length=25,
+                                        max_section_length=40,
+                                        max_episode_steps=100,
+                                        facing_forward=True,
+                                        reset_keep_same_length=False,
+                                        wall_tex='stripes_big',
+                                    )
+                    ):
     rollout_params = [
-        ("constant_gain", ConstantGainCollector, 10),
-        ("changing_gain_straight", ChangingGainStraightCollector, 10),
-        ("changing_gain_straight_glitch", ChangingGainStraightGlitchCollector, 10),
+        ("constant_gain", ConstantGainCollector, nb_trajectories),
+        ("changing_gain_straight", ChangingGainStraightCollector, nb_trajectories),
+        ("changing_gain_straight_glitch", ChangingGainStraightGlitchCollector, nb_trajectories),
     ]
 
     for collect_type, collector_class, n_rollouts in rollout_params:
-        env = gym.make("MiniWorld-TaskHallwaySimple-v0", view="agent", render_mode=None)
+        env = gym.make("MiniWorld-TaskHallwaySimple-v0", view="agent", render_mode=None, **env_args)
+        env = PyTorchObsWrapper(env)
         collector = collector_class(
-            env, loaded_policy, n_rollouts=n_rollouts, id_run=i_run
+            env, loaded_policy, n_rollouts=n_rollouts, id_run=i_run,env_args=env_args
         )
         rollouts, rollouts_action, n_rewards = collector.collect()
         save_rollouts(rollouts, rollouts_action, n_rewards, collect_type, i_run)
 
 
 def save_rollouts(rollouts, rollouts_action, n_rewards, collect_type, i_run):
-    print("proportion of rewarded trials :", n_rewards / len(rollouts))
+    print(collect_type,"proportion of rewarded trials :", n_rewards / len(rollouts))
 
     rollouts = np.stack(rollouts)
     rollouts_action = np.stack(rollouts_action)

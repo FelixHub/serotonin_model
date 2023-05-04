@@ -20,7 +20,6 @@ def gmm_loss(batch,mus,sigmas,logpi):
     
     return - torch.mean(log_prob)
 
-
 class MDRNN(nn.Module):
 
     def __init__(self, latent_dim, action_dim, hidden_dim, gaussians_nb,memory ='rnn'):

@@ -53,10 +53,10 @@ class Decoder(nn.Module):
         reconstruction = torch.sigmoid(self.deconv4(x))
         return reconstruction
 
-class VAE(nn.Module):
+class VAE_60_80(nn.Module):
     """ Variational Autoencoder """
     def __init__(self, img_channels, latent_dim,beta = 1):
-        super(VAE, self).__init__()
+        super(VAE_60_80, self).__init__()
         self.encoder = Encoder(img_channels, latent_dim)
         self.decoder = Decoder(img_channels, latent_dim)
         self.beta = beta
