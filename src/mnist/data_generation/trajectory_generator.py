@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .config import VideoConfig
+from config import VideoConfig
 
 
 @dataclass(kw_only=True)

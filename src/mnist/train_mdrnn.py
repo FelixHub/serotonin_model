@@ -22,7 +22,7 @@ print("device used:", device)
 # import data from the moving mnist dataset
 data = np.load("../data/MNIST/bouncing_mnist_test.npy")
 data = data / 255  # normalize the data to be between 0 and 1
-
+seq_len = data.shape[1] 
 
 def count_parameters(net):
     # return the number of parameters of the model
@@ -107,9 +107,8 @@ def main(params_path, model_path, model_vae_path):
         for x in pbar:
             x = torch.reshape(x, (-1, 1, 64, 64)).float().to(device)
             latents = vae_model.encoder(x)[0]
-            # x = torch.transpose(torch.reshape(x,(-1,20,64,64)),0,1).float().to(device)
-            latents = torch.transpose(torch.reshape(latents, (-1, 20, 32)), 0, 1)
-            seq_len, batch_size, _ = latents.shape
+            latents = torch.transpose(torch.reshape(latents, (-1, seq_len, model.latent_dim)), 0, 1)
+            _, batch_size, _ = latents.shape
 
             if model.memory == "rnn":
                 hidden = torch.zeros(batch_size, model.hidden_dim).to(device)

@@ -3,9 +3,9 @@ from dataclasses import dataclass
 import numpy as np
 from PIL import Image
 
-from .config import VideoConfig, arr_from_img, get_image_from_array
-from .digit_sampler import MNISTSampler
-from .trajectory_generator import TrajectoryGenerator
+from config import VideoConfig, arr_from_img, get_image_from_array
+from digit_sampler import MNISTSampler
+from trajectory_generator import TrajectoryGenerator
 
 
 @dataclass

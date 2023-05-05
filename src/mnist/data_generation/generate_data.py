@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 
-from . import digit_sampler, trajectory_generator
-from .config import VideoConfig, load_dataset
-from .moving_mnist_factory import MovingMNISTFactory
+
+import digit_sampler, trajectory_generator
+from config import VideoConfig, load_dataset
+from moving_mnist_factory import MovingMNISTFactory
 
 CONFIG = VideoConfig(num_frames=20, num_images=100, nums_per_image=2)
 MNIST_DATA = load_dataset()
