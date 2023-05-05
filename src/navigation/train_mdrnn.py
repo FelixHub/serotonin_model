@@ -21,7 +21,6 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print("device used:", device)
 
 
-
 def count_parameters(net):
     # return the number of parameters of the model
     return sum(p.numel() for p in net.parameters() if p.requires_grad)
@@ -72,7 +71,7 @@ def get_navigation_training_data(parameters):
         )
     return train_loader, joint_loader, nb_trajectories, nb_steps
 
-def main(params_path, model_path, model_vae_path):
+def main(params_path, model_path, model_vae_path,save_each_epochs,new_rollout_mode):
     # we do not allow the training if there is not a training VAE model
     if model_vae_path is None:
         raise ValueError("no VAE model path given, please train a VAE model first.")
@@ -123,8 +122,14 @@ def main(params_path, model_path, model_vae_path):
         )
         model.load_state_dict(torch.load(model_path))
 
-    # even if we load a model, we are going to save a new version of it to not risk any overwriting
-    model_name = "model_mdrnn_"+ parameters['rollout_type_mdrnn'] + datetime.today().strftime("%Y-%m-%d")
+
+    # if we want to train the model with a different rollout that its parameters, we overide the parameters
+    if new_rollout_mode is not None :
+        model_name = "model_mdrnn_"+ parameters['rollout_type_mdrnn'] +"_to_"+new_rollout_mode +'_'+datetime.today().strftime("%Y-%m-%d")
+        parameters['rollout_type_mdrnn'] = new_rollout_mode
+    else :
+        # even if we load a model, we are going to save a new version of it to not risk any overwriting
+        model_name = "model_mdrnn_"+ parameters['rollout_type_mdrnn'] +'_'+datetime.today().strftime("%Y-%m-%d")
 
     # we save the corresponding parameters
     with open(
@@ -140,6 +145,11 @@ def main(params_path, model_path, model_vae_path):
     train_loader, joint_loader, nb_trajectories, nb_steps = get_navigation_training_data(parameters)
     
     print("number of parameters :", count_parameters(model))
+
+    if save_each_epochs :
+        torch.save(
+            model.state_dict(), "../saved_models/navigation/" + model_name + "_epoch_"+str(0)+".pt"
+        )
 
     nb_epochs = parameters["nb_epochs_mdrnn"]
     for epoch in range(nb_epochs):
@@ -195,6 +205,10 @@ def main(params_path, model_path, model_vae_path):
             torch.save(
                 model.state_dict(), "../saved_models/navigation/" + model_name + ".pt"
             )
+        if save_each_epochs :
+            torch.save(
+                model.state_dict(), "../saved_models/navigation/" + model_name + "epoch_"+str(epoch + 1)+".pt"
+            )
 
     torch.save(model.state_dict(), "../saved_models/navigation/" + model_name + ".pt")
     print(
@@ -213,5 +227,24 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_vae_path", type=str, dest="model_vae_path", default=possible_vae_path
     )
+    parser.add_argument(
+        "--save_each_epochs", type=str, dest="save_each_epochs", default=False
+    )
+    parser.add_argument(
+        "--new_rollout_mode", type=str, dest="new_rollout_mode", default=None
+    )
     args = parser.parse_args(sys.argv[1:])
     main(**{k: v for (k, v) in vars(args).items()})
+
+
+'''
+
+main(
+    params_path="navigation/default_parameters.yaml",
+    model_path="../saved_models/navigation/model_mdrnn_rollout_constant_gain_2023-05-05.pt",
+    model_vae_path="../saved_models/navigation/model_vae_2023-05-04.pt",
+    save_each_epochs=True,
+    new_rollout_mode="rollout_changing_gain_straight"
+)
+
+'''

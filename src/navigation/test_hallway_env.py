@@ -21,7 +21,7 @@ env_args= dict(
         max_episode_steps=default_parameters['max_episode_steps'],
         facing_forward=default_parameters['facing_forward'],
         reset_keep_same_length=default_parameters['reset_keep_same_length'],
-        wall_tex=default_parameters['wall_tex'],
+        wall_tex="stripe_gradient" # default_parameters['wall_tex'],
             )
 
 
