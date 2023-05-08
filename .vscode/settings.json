@@ -1,7 +1,7 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "ms-python.black-formatter",
   "[python]": {
-    "editor.defaultFormatter": null
+    "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "editor.formatOnSaveMode": "file",
   "editor.formatOnSave": true,
