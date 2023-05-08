@@ -1,5 +1,6 @@
 # local folders
-data/
+/data/
+mouse_data/
 model/
 figures/
 saved_models/
