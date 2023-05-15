@@ -122,7 +122,7 @@ def main(params_path, model_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Command line options")
     parser.add_argument(
-        "--params_path", type=str, dest="params_path", default="mnist/default_parameters.yaml"
+        "--params_path", type=str, dest="params_path", default="mnist/default_parameters beta 50.yaml"
     )
     parser.add_argument("--model_path", type=str, dest="model_path", default=None)
     args = parser.parse_args(sys.argv[1:])

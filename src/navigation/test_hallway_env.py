@@ -70,7 +70,7 @@ def step(action):
         print(f"reward={reward:.2f}")
 
     if env.step_count % 5 == 0 :
-        env.change_gain(random=False,gain=1,glitch=True,glitch_phase=np.random.uniform(-0.8,0.8)) # glitch from -0.8 to +0.8 with 0.2 intervals
+        env.change_gain(random=True,motor_gains=[1, 2, 4],glitch=False,glitch_phase=np.random.uniform(-0.8,0.8)) # glitch from -0.8 to +0.8 with 0.2 intervals
 
     if termination or truncation:
         print("done!")

@@ -28,6 +28,7 @@ train_args = dict(
     max_section_length=15,
     max_episode_steps=250,
     facing_forward=False,
+    wall_tex='stripe_gradient'
 )
 
 policy = Policy().to(device)
@@ -90,4 +91,4 @@ def train(nb_episode=3000):
         
 train()
 
-torch.save(policy.state_dict(), 'miniworld_agent.pt')
+torch.save(policy.state_dict(), 'miniworld_agent_alt_texture.pt')

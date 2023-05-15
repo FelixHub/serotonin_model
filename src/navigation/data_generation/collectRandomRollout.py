@@ -11,7 +11,7 @@ rollout_args = dict(
     max_episode_steps=100,
     facing_forward=True,
     reset_keep_same_length=False,
-    wall_tex='stripes_big',
+    wall_tex='stripe_gradient', #  stripes_big
 )
 
 env = gym.make('MiniWorld-TaskHallwaySimple-v0', 
@@ -36,5 +36,6 @@ env.close()
 observations = np.stack(observations)
 print(observations.shape)
 
-with open('../data/navigation/randomRollout.npy', 'wb') as f:
+with open('../data/navigation/randomRollout_alt_texture.npy', 'wb') as f:
     a = np.save(f, observations)
+

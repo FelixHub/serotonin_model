@@ -6,7 +6,7 @@ mpl.rcParams["savefig.dpi"] = 300
 import numpy as np
 
 
-def plot_video_comparison(video, reconstructed_video):
+def plot_video_comparison(video, reconstructed_video,latent_var=False):
     nb_frame = video.shape[0]
     fig, ax = plt.subplots(2, nb_frame, figsize=(nb_frame, 2))
     for i in range(video.shape[0]):

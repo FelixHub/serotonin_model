@@ -9,7 +9,7 @@ from tqdm import tqdm
 from .rl_agent import DEVICE, Policy, select_action
 
 loaded_policy = Policy().to(DEVICE)
-loaded_policy.load_state_dict(torch.load("navigation/data_generation/miniworld_agent.pt"))
+loaded_policy.load_state_dict(torch.load("navigation/data_generation/miniworld_agent_alt_texture.pt"))
 loaded_policy.eval()
 
 
@@ -75,7 +75,7 @@ class ChangingGainStraightCollector(BaseCollector):
 
     def strategy(self, i_step, gain_change_steps):
         if (len(gain_change_steps) > 0) and (i_step == gain_change_steps[0]):
-            self.env.change_gain(motor_gains=[0.5, 1, 1.5])
+            self.env.change_gain(motor_gains=[1, 2, 3]) # [0.5, 1, 1.5])
             gain_change_steps.pop(0)
 
     def initialize_gain_change_steps(self):
@@ -90,7 +90,7 @@ class ChangingGainStraightGlitchCollector(ChangingGainStraightCollector):
     def strategy(self, i_step, gain_change_steps):
         if (len(gain_change_steps) > 0) and (i_step == gain_change_steps[0]):
             self.env.change_gain(
-                motor_gains=[0.5, 1, 1.5],
+                motor_gains= [1,2,3],# [0.3, 1, 3], # [0.5, 1, 1.5],
                 glitch=True,
                 glitch_phase=np.random.uniform(-0.8,0.8),
             )
@@ -107,9 +107,9 @@ def collect_rollouts(i_run=0,nb_trajectories = 1000,env_args= dict(
                                     )
                     ):
     rollout_params = [
-        ("constant_gain", ConstantGainCollector, nb_trajectories),
+        # ("constant_gain", ConstantGainCollector, nb_trajectories),
         ("changing_gain_straight", ChangingGainStraightCollector, nb_trajectories),
-        ("changing_gain_straight_glitch", ChangingGainStraightGlitchCollector, nb_trajectories),
+        # ("changing_gain_straight_glitch", ChangingGainStraightGlitchCollector, nb_trajectories),
     ]
 
     for collect_type, collector_class, n_rollouts in rollout_params:
@@ -129,9 +129,9 @@ def save_rollouts(rollouts, rollouts_action, n_rewards, collect_type, i_run):
     rollouts_action = np.stack(rollouts_action)
     rollouts = np.sum(rollouts, axis=-3, keepdims=1) / 3
 
-    with open(f"../data/rollout_{collect_type}_obs_{i_run}.npy", "wb") as f:
+    with open(f"../data/navigation/rollout_{collect_type}_obs_{i_run}_alt_texture_1.npy", "wb") as f:
         np.save(f, rollouts)
-    with open(f"../data/rollout_{collect_type}_actions_{i_run}.npy", "wb") as f:
+    with open(f"../data/navigation/rollout_{collect_type}_actions_{i_run}_alt_texture_1.npy", "wb") as f:
         np.save(f, rollouts_action)
 
     del rollouts, rollouts_action

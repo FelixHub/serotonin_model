@@ -19,7 +19,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print("device used:", device)
 
 # import random rollout data from the Task-Hallway environment
-data = np.load("../data/navigation/randomRollout.npy")
+data = np.load("../data/navigation/randomRollout_alt_texture.npy")
 data = data / 255
 print("random rollout data shape :",data.shape)
 

@@ -1,11 +1,14 @@
 from navigation.data_generation.rollouts import collect_rollouts
 import yaml
 
-i_run=0
-nb_trajectories = 1000
-params_path = "navigation/default_params.yml"
+i_run=1
+
+nb_trajectories = 3000
+params_path = "navigation/default_parameters.yaml"
+
 with open(params_path) as file:
             parameters = yaml.load(file, Loader=yaml.FullLoader)
+
 env_args= dict(
                 min_section_length=parameters['min_section_length'],
                 max_section_length=parameters['max_section_length'],
@@ -15,4 +18,4 @@ env_args= dict(
                 wall_tex=parameters['wall_tex'],
                 )
 
-collect_rollouts()
+collect_rollouts(i_run,nb_trajectories,env_args)

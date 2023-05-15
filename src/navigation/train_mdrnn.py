@@ -42,14 +42,15 @@ def get_navigation_training_data(parameters):
     data_actions = []
 
     rollout_type = parameters['rollout_type_mdrnn']
-    nb_rollout_files = 0 # len(os.listdir('../../data/'+rollout_type)) // 2
+    print('using training data from',rollout_type)
+    nb_rollout_files = 2 # len(os.listdir('../data/navigation/')) // 6
 
-    for i in range(0,nb_rollout_files+1):
-        data_temp = np.load('../data/navigation/'+rollout_type+'_obs_'+str(i)+'.npy')
+    for i in range(0,nb_rollout_files):
+        data_temp = np.load('../data/navigation/'+rollout_type+'_obs_'+str(i)+'_alt_texture_1.npy')
         data_temp = np.transpose(data_temp,(0,1,2,4,3))
         data.append(data_temp)
 
-        data_actions_temp = np.load('../data/navigation/'+rollout_type+'_actions_'+str(i)+'.npy')
+        data_actions_temp = np.load('../data/navigation/'+rollout_type+'_actions_'+str(i)+'_alt_texture_1.npy')
         data_actions.append(data_actions_temp)
 
     data = np.concatenate(data) / 255
@@ -129,7 +130,7 @@ def main(params_path, model_path, model_vae_path,save_each_epochs,new_rollout_mo
         parameters['rollout_type_mdrnn'] = new_rollout_mode
     else :
         # even if we load a model, we are going to save a new version of it to not risk any overwriting
-        model_name = "model_mdrnn_"+ parameters['rollout_type_mdrnn'] +'_'+datetime.today().strftime("%Y-%m-%d")
+        model_name = "model_mdrnn_1_"+ parameters['rollout_type_mdrnn'] +'_'+datetime.today().strftime("%Y-%m-%d")
 
     # we save the corresponding parameters
     with open(
@@ -241,10 +242,10 @@ if __name__ == "__main__":
 
 main(
     params_path="navigation/default_parameters.yaml",
-    model_path="../saved_models/navigation/model_mdrnn_rollout_constant_gain_2023-05-05.pt",
-    model_vae_path="../saved_models/navigation/model_vae_2023-05-04.pt",
-    save_each_epochs=True,
-    new_rollout_mode="rollout_changing_gain_straight"
+    model_path="../saved_models/navigation/model_mdrnn_1_rollout_changing_gain_straight_2023-05-08.pt",
+    model_vae_path="../saved_models/navigation/model_vae_2023-05-07.pt",
+    save_each_epochs=False,
+    new_rollout_mode=None
 )
 
 '''
