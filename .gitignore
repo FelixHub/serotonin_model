@@ -1,5 +1,4 @@
 # local folders
-/data/
 mouse_data/
 model/
 figures/
@@ -21,3 +20,6 @@ workbench*.py
 # python cache files
 *__pycache__/
 *.pyc
+
+data_new/
+data/

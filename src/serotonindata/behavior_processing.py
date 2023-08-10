@@ -110,17 +110,19 @@ class GainChangeEvents(dj.Computed):
         gain, position, trial_num = (PhotometrySyncBehavior() & key).fetch1(
             "gain", "wheel_position", "trial_num"
         )
-
+        print("gain",gain)
         # Find gain changes
         # gain_changes = np.unique(np.diff(gain[~np.isnan(gain)]))
         # gain_changes = gain_changes[np.abs(gain_changes) >= 0]
         # gain_change_samples = np.where(np.isin(np.diff(gain), gain_changes))[0]
         gain_change_samples = np.where(np.diff(trial_num) > 0)[0]
-
+        print("gain_change_samples",gain_change_samples)
         # Get information about gain changes
         gain_change_magnitudes = [np.diff(gain)[ix] for ix in gain_change_samples]
         gain_pre = gain[gain_change_samples]
         gain_post = gain[gain_change_samples + 1]
+        print(gain_pre)
+        print(gain_post)
         sinusoid_frequency = 50 / 3  # from Romain
         delta_position = np.mod(
             np.diff(position)[gain_change_samples], sinusoid_frequency

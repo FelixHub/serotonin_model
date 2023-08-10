@@ -6,6 +6,15 @@ import matplotlib.pyplot as plt
 from visualization_utils import get_gain_change_data
 
 
+def get_trial_number(a):
+    trial_number = [1]
+    for i in range(1,len(a)) :
+        if a[i] == a[i-1]:
+            trial_number.append(trial_number[i-1] + 1)
+        else :
+            trial_number.append(1)
+    return np.array(trial_number)
+
 class TraceVisualizer:
     def __init__(
         self,
@@ -30,6 +39,7 @@ class TraceVisualizer:
         self.xticks_sample = None
         self.samples_pre = None
 
+
     def process_data(self):
         # Gather gain change information and photometry data
         (
@@ -43,6 +53,7 @@ class TraceVisualizer:
             samples_post,
             dt,
         ) = get_gain_change_data(self.key, self.pooling, self.time_pre, self.time_post)
+        trial_number = get_trial_number(session_number)
 
         # process analysis settings
         self.xticks_sample = [
@@ -55,6 +66,7 @@ class TraceVisualizer:
             )
             for this_xtick in self.xticks_sec
         ]
+
         self.samples_pre = samples_pre
 
         # bin delta position around max potential delta
@@ -86,6 +98,8 @@ class TraceVisualizer:
         gain_change_df["Delta Position"] = delta_position_discr
         gain_change_df["Gain Pre"] = gain_pre
         gain_change_df["Gain Post"] = gain_post
+        gain_change_df["session_number"] = session_number
+        gain_change_df['trial_number'] = trial_number
 
         gain_change_df = gain_change_df.melt(
             id_vars=[
@@ -94,11 +108,15 @@ class TraceVisualizer:
                 "Delta Position value",
                 "Gain Pre",
                 "Gain Post",
+                "session_number",
+                "trial_number",
             ]
         ).rename(
             columns={"variable": "Time Aligned to Gain Change (sec)", "value": "dF/F"}
         )
-        gain_change_df.sort_values("Gain Change Magnitude", inplace=True)
+        gain_change_df['true_time'] = gain_change_df["Time Aligned to Gain Change (sec)"]*dt - self.time_pre
+        # we do not wish to sort the values
+        # gain_change_df.sort_values("Gain Change Magnitude", inplace=True)
 
         return gain_change_df
 

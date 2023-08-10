@@ -80,6 +80,7 @@ def get_gain_change_data(
         dt = np.median(np.diff(example_sample_times)).round(2)
         samples_pre = np.round(time_pre / dt).astype(int)
         samples_post = np.round(time_post / dt).astype(int)
+        print("dt",dt)
 
         gain_change_mapping = {
             2.7: "0: ++",
@@ -109,7 +110,6 @@ def get_gain_change_data(
                 s_gain_post,
             ) = fetch_gain_change_event_data(session_key)
             df_over_f = (ProcessedPhotometry & session_key).fetch1("df_over_f")
-
             s_gain_change_psth = align_gain_change_psth(
                 df_over_f, s_gain_change_samples, samples_pre, samples_post
             )
