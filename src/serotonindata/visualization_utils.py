@@ -41,6 +41,7 @@ def get_gain_change_data(
             "delta_position",
             "gain_pre",
             "gain_post",
+            # "running_speed"
         )
 
     def fetch_processed_photometry_data(key: dict) -> Tuple:
@@ -53,11 +54,12 @@ def get_gain_change_data(
             delta_position,
             gain_pre,
             gain_post,
+            # running_speed
         ) = fetch_gain_change_event_data(key)
 
         sample_times, df_over_f = fetch_processed_photometry_data(key)
+        # print(running_speed)
 
-        n_samples = len(sample_times)
         dt = np.median(np.diff(sample_times)).round(2)
         samples_pre = np.round(time_pre / dt).astype(int)
         samples_post = np.round(time_post / dt).astype(int)
@@ -73,10 +75,12 @@ def get_gain_change_data(
             if pooling == "mouse"
             else (GainChangeEvents()).fetch("KEY")
         )
+        print('session_keys',session_keys)
 
         example_sample_times = (ProcessedPhotometry() & session_keys[0]).fetch1(
             "sample_times"
         )
+        
         dt = np.median(np.diff(example_sample_times)).round(2)
         samples_pre = np.round(time_pre / dt).astype(int)
         samples_post = np.round(time_post / dt).astype(int)

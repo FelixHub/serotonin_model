@@ -107,15 +107,17 @@ class GainChangeEvents(dj.Computed):
 
     def make(self, key):
         # load sync behavior data
-        gain, position, trial_num = (PhotometrySyncBehavior() & key).fetch1(
-            "gain", "wheel_position", "trial_num"
+        gain, position, trial_num = (PhotometrySyncBehavior() & key).fetch1( # , running_speed
+            "gain", "wheel_position", "trial_num" # ,"running_speed"
         )
         print("gain",gain)
+        # print("running_speed",running_speed)
         # Find gain changes
         # gain_changes = np.unique(np.diff(gain[~np.isnan(gain)]))
         # gain_changes = gain_changes[np.abs(gain_changes) >= 0]
         # gain_change_samples = np.where(np.isin(np.diff(gain), gain_changes))[0]
         gain_change_samples = np.where(np.diff(trial_num) > 0)[0]
+        # gain_change_samples = np.where(np.abs(np.diff(gain)) > 0.01)[0]
         print("gain_change_samples",gain_change_samples)
         # Get information about gain changes
         gain_change_magnitudes = [np.diff(gain)[ix] for ix in gain_change_samples]
@@ -134,4 +136,5 @@ class GainChangeEvents(dj.Computed):
         key["delta_position"] = delta_position
         key["gain_pre"] = gain_pre
         key["gain_post"] = gain_post
+        # key['running_speed'] = running_speed
         self.insert1(key)
