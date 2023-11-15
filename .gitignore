@@ -19,3 +19,6 @@ workbench*.py
 # python cache files
 *__pycache__/
 *.pyc
+
+src/serotonindata/mouse_data
+src/serotonindata/data_new
